@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Nearby Explorer — Web</title>
+
+    <!-- Mapbox GL CSS (CDN) -->
+    <link
+      href="https://api.mapbox.com/mapbox-gl-js/v2.16.0/mapbox-gl.css"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <h1>Nearby Explorer</h1>
+      <div class="header-controls">
+        <button id="btn-refresh-location">Refresh Location</button>
+        <select id="select-category" aria-label="Category">
+          <option value="restaurant">Restaurants</option>
+          <option value="cafe">Cafes</option>
+          <option value="shop">Shops</option>
+          <option value="bar">Bars</option>
+          <option value="park">Parks</option>
+          <option value="atm">ATMs</option>
+        </select>
+        <button id="btn-search">Find Nearby</button>
+        <button id="btn-toggle-view">List View</button>
+      </div>
+    </header>
+
+    <main class="main-grid">
+      <section class="map-pane">
+        <div id="map" class="map"></div>
+        <div class="map-overlay">
+          <div id="user-info">
+            Location: <span id="user-coords">unknown</span>
+          </div>
+          <div id="map-status" class="status muted">Idle</div>
+        </div>
+      </section>
+
+      <aside class="list-pane">
+        <div class="list-header">
+          <h2>Nearby Places</h2>
+          <div id="places-loading" class="muted small">Idle</div>
+        </div>
+        <ul id="places-list" class="places-list"></ul>
+
+        <div class="place-details" id="place-details" hidden>
+          <h3 id="detail-name"></h3>
+          <p id="detail-address"></p>
+          <p id="detail-distance"></p>
+
+          <div id="photo-thumbs" class="photo-thumbs"></div>
+
+          <div class="detail-actions">
+            <input
+              id="photo-input"
+              type="file"
+              accept="image/*"
+              capture="environment"
+              style="display: none"
+            />
+            <button id="btn-take-photo">Take Photo</button>
+            <button id="btn-share" disabled>Share</button>
+            <button id="btn-close-details">Close</button>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <template id="place-item-template">
+      <li class="place-item">
+        <div class="place-main">
+          <div class="place-title"></div>
+          <div class="place-sub muted"></div>
+        </div>
+        <div class="place-actions">
+          <button class="btn-view">View</button>
+          <button class="btn-photo">Photo</button>
+        </div>
+      </li>
+    </template>
+
+    <footer class="site-footer">
+      <small class="muted"
+        >Built with Mapbox & browser APIs — replace tokens in app.js</small
+      >
+    </footer>
+
+    <!-- Mapbox GL JS (CDN) -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.16.0/mapbox-gl.js"></script>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>

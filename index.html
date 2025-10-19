@@ -5,15 +5,40 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Nearby Explorer — Web</title>
 
-    <!-- Mapbox GL CSS (CDN) -->
+    <!-- Mapbox CSS (CDN) - keep this in head -->
     <link
+      id="mapbox-css"
       href="https://api.mapbox.com/mapbox-gl-js/v2.16.0/mapbox-gl.css"
       rel="stylesheet"
     />
 
     <link rel="stylesheet" href="styles.css" />
+    <style>
+      /* small fallback so the map area is visible while loading */
+      #map {
+        min-height: 320px;
+      }
+      .loader-note {
+        position: fixed;
+        left: 12px;
+        top: 12px;
+        background: #fff3f3;
+        padding: 8px;
+        border: 1px solid #f2a0a0;
+        z-index: 9999;
+        border-radius: 6px;
+        display: none;
+      }
+    </style>
   </head>
   <body>
+    <div
+      class="loader-note"
+      id="loader-note"
+      role="alert"
+      aria-live="polite"
+    ></div>
+
     <header class="site-header">
       <h1>Nearby Explorer</h1>
       <div class="header-controls">
@@ -33,7 +58,7 @@
 
     <main class="main-grid">
       <section class="map-pane">
-        <div id="map" class="map"></div>
+        <div id="map" class="map" aria-label="Map showing nearby places"></div>
         <div class="map-overlay">
           <div id="user-info">
             Location: <span id="user-coords">unknown</span>
@@ -91,9 +116,76 @@
       >
     </footer>
 
-    <!-- Mapbox GL JS (CDN) -->
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.16.0/mapbox-gl.js"></script>
+    <script>
+      (function dynamicLoadMapbox() {
+        const loaderNote = document.getElementById("loader-note");
+        function showNote(msg) {
+          loaderNote.textContent = msg;
+          loaderNote.style.display = "block";
+        }
+        // URLs to try (primary then fallback)
+        const scriptUrls = [
+          "https://api.mapbox.com/mapbox-gl-js/v2.16.0/mapbox-gl.js", // official
+          "https://unpkg.com/mapbox-gl@2.16.0/dist/mapbox-gl.js", // fallback
+        ];
+        const cssUrls = [
+          "https://api.mapbox.com/mapbox-gl-js/v2.16.0/mapbox-gl.css",
+          "https://unpkg.com/mapbox-gl@2.16.0/dist/mapbox-gl.css",
+        ];
+        // ensure a CSS link exists and fallback if needed
+        function ensureCss() {
+          const head = document.head;
+          const link = document.getElementById("mapbox-css");
+          // try to fetch primary css quickly to detect network block
+          fetch(cssUrls[0], { method: "HEAD", mode: "no-cors" }).catch(() => {
+            /* ignore */
+          });
+          // If CSS is blocked, still try to load script fallbacks below
+        }
+        ensureCss();
 
+        // try to load scriptUrls in order
+        let attempt = 0;
+        function tryLoad() {
+          if (attempt >= scriptUrls.length) {
+            showNote(
+              "Mapbox failed to load from CDNs. Check network or disable adblocker."
+            );
+            console.error(
+              "All Mapbox CDN attempts failed. Checked URLs:",
+              scriptUrls
+            );
+            return;
+          }
+          const url = scriptUrls[attempt];
+          showNote("Loading map library...");
+          const s = document.createElement("script");
+          s.src = url;
+          s.async = false;
+          s.defer = false;
+          s.onload = () => {
+            loaderNote.style.display = "none";
+            console.info("Mapbox loaded from", url);
+          };
+          s.onerror = () => {
+            console.warn("Failed to load Mapbox from", url);
+            attempt++;
+            // try next
+            tryLoad();
+          };
+          document.body.appendChild(s);
+        }
+        tryLoad();
+      })();
+    </script>
+
+    <!--  app.js contains defensive init -->
     <script src="app.js" defer></script>
+
+    <noscript>
+      <div style="background: #ffefc7; padding: 10px; text-align: center">
+        This app requires JavaScript. Please enable JavaScript.
+      </div>
+    </noscript>
   </body>
 </html>
